@@ -1,4 +1,4 @@
-import Image from "next/image";
+/* import Image from "next/image";
 
 export default function Home() {
   return (
@@ -61,5 +61,41 @@ export default function Home() {
         </div>
       </main>
     </div>
-  );
+  ); */
+import { createClient } from '@/utils/supabase/server'
+
+export default async function Dashboard() {
+  const supabase = await createClient()
+  
+  // Fetch tasks sorted automatically by due date
+  const { data: tasks, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .order('due_date', { ascending: true })
+
+  if (error) {
+    return <div className="p-6 text-red-500">Error loading Tend tasks.</div>
+  }
+
+  return (
+    <main className="max-w-xl mx-auto p-8">
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-900">Tend</h1>
+        <p className="text-slate-500 italic">Tend to What Matters</p>
+      </header>
+
+      <ul className="space-y-3">
+        {tasks?.map((task) => (
+          <li key={task.id} className="flex justify-between p-4 bg-white border rounded-lg shadow-sm">
+            <span className={task.is_completed ? 'line-through text-slate-400' : 'text-slate-800'}>
+              {task.title}
+            </span>
+            <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600 self-center">
+              {task.category}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
 }
