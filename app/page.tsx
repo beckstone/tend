@@ -63,6 +63,7 @@ export default function Home() {
     </div>
   ); */
 import { createClient } from '@/utils/supabase/server'
+import AddTaskForm from '@/components/AddTaskForm'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -82,26 +83,6 @@ export default async function Dashboard() {
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-slate-900">Tend</h1>
         <p className="text-slate-500 italic">Tend to What Matters</p>
-      </header>
-
-      import { createClient } from '@/utils/supabase/server'
-import AddTaskForm from '@/components/AddTaskForm'
-
-export default async function Dashboard() {
-  const supabase = await createClient()
-  
-  // Fetch tasks ordered by soonest deadline first
-  const { data: tasks, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .order('due_date', { ascending: true })
-
-  return (
-    <main className="max-w-xl mx-auto p-6 md:p-12">
-      {/* App Branding Header */}
-      <header className="mb-8 text-center md:text-left">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Tend</h1>
-        <p className="text-slate-500 italic mt-1">Tend to What Matters</p>
       </header>
 
       {/* Task Creation Form Action */}
