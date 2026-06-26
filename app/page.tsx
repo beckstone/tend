@@ -24,9 +24,11 @@ export default async function Dashboard() {
 
   return (
     <main className="max-w-xl mx-auto p-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-green-900">Tend</h1>
-        <p className="text-slate-500 italic">Tend to What Matters</p>
+      <header className="mb-6 text-center">
+        <h1 className="text-5xl md:text-6xl font-bold text-green-900 leading-tight" style={{ fontFamily: 'var(--font-festive)' }}>
+          Tend
+        </h1>
+        <p className="text-slate-500 italic mt-2">Tend to What Matters</p>
       </header>
 
       {/* Task Creation Form Action */}

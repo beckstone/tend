@@ -1,6 +1,5 @@
 @import "tailwindcss";
-
-
+/* main.css */
 
 :root {
   --background: #ffffff;
@@ -13,20 +12,6 @@
     --background: linear-gradient(0deg,rgba(238, 174, 202, 1) 0%, rgba(255, 255, 255, 1) 100%);
     --foreground: #E9EAF2;
   }
-}
-
-h1 {
-  font-family: "Festive", cursive;
-  font-weight: 400;
-  font-style: normal;
-}
-
-h2 {
-  text-align: center;
-}
-
-p {
-  text-align: center;
 }
 
 body {
