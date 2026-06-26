@@ -74,10 +74,10 @@ export default function AddTaskForm() {
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-center">
         <button
           type="submit"
-          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
+          className="px-4 py-2 bg-green-900 hover:bg-green-800 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
         >
           Add Task
         </button>
