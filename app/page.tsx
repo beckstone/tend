@@ -11,7 +11,15 @@ export default async function Dashboard() {
     .order('due_date', { ascending: true })
 
   if (error) {
-    return <div className="p-6 text-red-500">Error loading Tend tasks.</div>
+    return (
+      <div className="p-6 text-red-500">
+        <p className="font-semibold">Error loading Tend tasks.</p>
+        <p className="mt-2 text-sm">{error.message}</p>
+        <p className="mt-2 text-sm text-slate-600">
+          This usually means the Supabase table permissions or Row Level Security policy need to be adjusted.
+        </p>
+      </div>
+    )
   }
 
   return (
