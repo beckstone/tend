@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
 type Task = {
@@ -18,6 +18,16 @@ type User = {
   email?: string | null
 }
 
+const TASK_CATEGORIES = [
+  'General',
+  'Work',
+  'Personal',
+  'Health',
+  'Finance',
+  'Household Chores',
+  'Self Improvement',
+]
+
 const supabase = createClient()
 
 export default function TaskDashboard() {
@@ -28,6 +38,16 @@ export default function TaskDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const [authMessage, setAuthMessage] = useState<string | null>(null)
+  const [updatingTaskIds, setUpdatingTaskIds] = useState<number[]>([])
+  const [deletingTaskIds, setDeletingTaskIds] = useState<number[]>([])
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [sortBy, setSortBy] = useState<'dueDateAsc' | 'dueDateDesc' | 'category'>('dueDateAsc')
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    category: 'General',
+    dueDate: '',
+  })
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn')
   const [form, setForm] = useState({
     title: '',
@@ -37,6 +57,27 @@ export default function TaskDashboard() {
     email: '',
     password: '',
   })
+
+  const sortedTasks = useMemo(() => {
+    const next = [...tasks]
+
+    if (sortBy === 'category') {
+      return next.sort((a, b) => {
+        const categoryCompare = a.category.localeCompare(b.category)
+        if (categoryCompare !== 0) return categoryCompare
+        return a.title.localeCompare(b.title)
+      })
+    }
+
+    return next.sort((a, b) => {
+      if (!a.due_date && !b.due_date) return a.title.localeCompare(b.title)
+      if (!a.due_date) return 1
+      if (!b.due_date) return -1
+      return sortBy === 'dueDateAsc'
+        ? a.due_date.localeCompare(b.due_date)
+        : b.due_date.localeCompare(a.due_date)
+    })
+  }, [tasks, sortBy])
 
   useEffect(() => {
     const getSession = async () => {
@@ -163,6 +204,123 @@ export default function TaskDashboard() {
     setLoading(false)
   }
 
+  const handleToggleTaskComplete = async (taskId: number, isCompleted: boolean) => {
+    if (!user) return
+
+    setError(null)
+    setUpdatingTaskIds((prev) => [...prev, taskId])
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, is_completed: isCompleted } : task
+      )
+    )
+
+    const { error } = await supabase
+      .from('tasks')
+      .update({ is_completed: isCompleted })
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === taskId ? { ...task, is_completed: !isCompleted } : task
+        )
+      )
+      setError(error.message)
+    }
+
+    setUpdatingTaskIds((prev) => prev.filter((id) => id !== taskId))
+  }
+
+  const handleDeleteTask = async (taskId: number) => {
+    if (!user) return
+
+    setError(null)
+    setDeletingTaskIds((prev) => [...prev, taskId])
+
+    const previousTasks = tasks
+    setTasks((prev) => prev.filter((task) => task.id !== taskId))
+
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      setTasks(previousTasks)
+      setError(error.message)
+    }
+
+    setDeletingTaskIds((prev) => prev.filter((id) => id !== taskId))
+  }
+
+  const handleStartEditTask = (task: Task) => {
+    setError(null)
+    setEditingTaskId(task.id)
+    setEditForm({
+      title: task.title,
+      description: task.description ?? '',
+      category: task.category,
+      dueDate: task.due_date ? task.due_date.split('T')[0] : '',
+    })
+  }
+
+  const handleCancelEditTask = () => {
+    setEditingTaskId(null)
+  }
+
+  const handleSaveTaskEdits = async (taskId: number) => {
+    if (!user) return
+
+    const title = editForm.title.trim()
+    if (!title) {
+      setError('Task title is required.')
+      return
+    }
+
+    setError(null)
+    setUpdatingTaskIds((prev) => [...prev, taskId])
+
+    const previousTasks = tasks
+    const editedTask = {
+      title,
+      description: editForm.description.trim() || null,
+      category: editForm.category || 'General',
+      due_date: editForm.dueDate || null,
+    }
+
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              title: editedTask.title,
+              description: editedTask.description,
+              category: editedTask.category,
+              due_date: editedTask.due_date,
+            }
+          : task
+      )
+    )
+
+    const { error } = await supabase
+      .from('tasks')
+      .update(editedTask)
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      setTasks(previousTasks)
+      setError(error.message)
+    } else {
+      setEditingTaskId(null)
+    }
+
+    setUpdatingTaskIds((prev) => prev.filter((id) => id !== taskId))
+  }
+
   if (authLoading) {
     return <p className="text-center text-sm text-slate-500">Loading auth...</p>
   }
@@ -276,13 +434,9 @@ export default function TaskDashboard() {
                 onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-800"
               >
-                <option>General</option>
-                <option>Work</option>
-                <option>Personal</option>
-                <option>Health</option>
-                <option>Finance</option>
-                <option>Household Chores</option>
-                <option>Self Improvement</option>
+                {TASK_CATEGORIES.map((category) => (
+                  <option key={category}>{category}</option>
+                ))}
               </select>
             </div>
 
@@ -315,7 +469,20 @@ export default function TaskDashboard() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Your List</h3>
-          <span className="text-xs text-slate-400">{tasks.length} tasks</span>
+          <div className="flex items-center gap-2">
+            <label htmlFor="sortTasks" className="text-xs text-slate-500">Sort</label>
+            <select
+              id="sortTasks"
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value as 'dueDateAsc' | 'dueDateDesc' | 'category')}
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-700"
+            >
+              <option value="dueDateAsc">Due date (ascending)</option>
+              <option value="dueDateDesc">Due date (descending)</option>
+              <option value="category">Category (A-Z)</option>
+            </select>
+            <span className="text-xs text-slate-400">{tasks.length} tasks</span>
+          </div>
         </div>
 
         {loading && <p className="text-slate-500">Loading tasks...</p>}
@@ -323,18 +490,109 @@ export default function TaskDashboard() {
         {!loading && tasks.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-6 border border-dashed rounded-xl">Your mind is clear. No active tasks to tend to.</p>
         ) : (
-          tasks.map((task) => (
-            <div key={task.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-900">{task.title}</p>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{task.category}</span>
+          sortedTasks.map((task) => {
+            const isEditing = editingTaskId === task.id
+            const isUpdating = updatingTaskIds.includes(task.id)
+            const isDeleting = deletingTaskIds.includes(task.id)
+
+            return (
+              <div key={task.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={task.is_completed}
+                        disabled={isUpdating || isDeleting}
+                        onChange={(event) => handleToggleTaskComplete(task.id, event.target.checked)}
+                        className="h-4 w-4 cursor-pointer rounded border-slate-300 text-green-700 focus:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label={`Mark ${task.title} as complete`}
+                      />
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editForm.title}
+                          onChange={(event) => setEditForm((prev) => ({ ...prev, title: event.target.value }))}
+                          className="w-full rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-700"
+                          placeholder="Task title"
+                        />
+                      ) : (
+                        <p className={`text-sm font-semibold ${task.is_completed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                          {task.title}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => (isEditing ? handleSaveTaskEdits(task.id) : handleStartEditTask(task))}
+                        disabled={isUpdating || isDeleting}
+                        className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isUpdating && isEditing ? 'Saving...' : isEditing ? 'Save task' : 'Edit task'}
+                      </button>
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={handleCancelEditTask}
+                          disabled={isUpdating}
+                          className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTask(task.id)}
+                        disabled={isDeleting || isUpdating}
+                        className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete task'}
+                      </button>
+                    </div>
+                  </div>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.description}
+                      onChange={(event) => setEditForm((prev) => ({ ...prev, description: event.target.value }))}
+                      className="w-full rounded border border-slate-300 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-700"
+                      placeholder="Description"
+                    />
+                  ) : (
+                    task.description && <p className="text-sm text-slate-600">{task.description}</p>
+                  )}
+                  <div className="flex items-center justify-between gap-2">
+                    {isEditing ? (
+                      <select
+                        value={editForm.category}
+                        onChange={(event) => setEditForm((prev) => ({ ...prev, category: event.target.value }))}
+                        className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-700"
+                      >
+                        {TASK_CATEGORIES.map((category) => (
+                          <option key={category}>{category}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{task.category}</span>
+                    )}
+                    {isEditing ? (
+                      <input
+                        type="date"
+                        value={editForm.dueDate}
+                        onChange={(event) => setEditForm((prev) => ({ ...prev, dueDate: event.target.value }))}
+                        className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-700"
+                      />
+                    ) : (
+                      <p className="text-right text-xs text-slate-400">
+                        {task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : ''}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                {task.description && <p className="text-sm text-slate-600">{task.description}</p>}
-                {task.due_date && <p className="text-xs text-slate-400">Due: {new Date(task.due_date).toLocaleDateString()}</p>}
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </section>
     </div>
