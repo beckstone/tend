@@ -140,7 +140,7 @@ export default function TaskDashboard() {
     setError(null)
     setLoading(true)
 
-    const { data: insertedTasks, error } = await supabase
+    const { error } = await supabase
       .from('tasks')
       .insert({
         title: form.title.trim(),
@@ -149,7 +149,6 @@ export default function TaskDashboard() {
         due_date: form.dueDate || null,
         user_id: user.id,
       })
-      .select('id,title,description,category,due_date,is_completed,created_at')
 
     if (error) {
       setError(error.message)
@@ -159,11 +158,7 @@ export default function TaskDashboard() {
 
     setForm((prev) => ({ ...prev, title: '', description: '', dueDate: '' }))
 
-    if (insertedTasks?.length) {
-      setTasks((prev) => [...prev, ...insertedTasks])
-    } else {
-      await fetchTasks(user.id)
-    }
+    await fetchTasks(user.id)
 
     setLoading(false)
   }
