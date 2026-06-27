@@ -4,8 +4,8 @@ export default function Dashboard() {
   return (
     <main className="max-w-xl mx-auto p-8 space-y-6">
       <header className="text-center space-y-2">
-        <h1 className="text-3xl font-semibold text-slate-900">Tend</h1>
-        <p className="text-sm text-slate-500">Organize what matters and stay on top of your day.</p>
+        <h1 className="font-[family:var(--font-festive)] text-5xl font-bold text-green-700">Tend</h1>
+        <p className="text-sm text-slate-500">Tend to what matters and stay on top of your day</p>
       </header>
       <TaskDashboard />
     </main>
