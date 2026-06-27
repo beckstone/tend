@@ -1,5 +1,16 @@
 alter table public.tasks enable row level security;
 
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on table public.tasks to authenticated;
+
+do $$
+begin
+	if to_regclass('public.tasks_id_seq') is not null then
+		execute 'grant usage, select on sequence public.tasks_id_seq to authenticated';
+	end if;
+end
+$$;
+
 drop policy if exists "tasks_select_own" on public.tasks;
 create policy "tasks_select_own"
 on public.tasks
