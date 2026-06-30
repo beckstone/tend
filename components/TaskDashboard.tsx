@@ -491,6 +491,9 @@ export default function TaskDashboard() {
           <p className="text-slate-400 text-sm text-center py-6 border border-dashed rounded-xl">Your mind is clear. No active tasks to tend to.</p>
         ) : (
           sortedTasks.map((task) => {
+            const today = new Date().toISOString().split('T')[0]
+            const taskDueDate = task.due_date ? task.due_date.split('T')[0] : null
+            const isOverdue = Boolean(taskDueDate && taskDueDate < today)
             const isEditing = editingTaskId === task.id
             const isUpdating = updatingTaskIds.includes(task.id)
             const isDeleting = deletingTaskIds.includes(task.id)
@@ -584,7 +587,7 @@ export default function TaskDashboard() {
                         className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-700"
                       />
                     ) : (
-                      <p className="text-right text-xs text-slate-400">
+                      <p className={`text-right text-xs ${isOverdue ? 'text-red-600' : 'text-slate-400'}`}>
                         {task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : ''}
                       </p>
                     )}
