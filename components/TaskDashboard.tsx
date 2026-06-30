@@ -329,7 +329,7 @@ export default function TaskDashboard() {
     return (
       <div className="space-y-6">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-3xl font-semibold text-green-700 mb-2">Sign in to Tend</h1>
+          <h1 className="text-3xl font-semibold text-green-900 mb-2">Sign in to Tend</h1>
           <p className="text-sm text-slate-500 mb-4">Sign in or create an account </p>
           <form onSubmit={handleAuthSubmit} className="space-y-4">
             <div>
@@ -384,12 +384,12 @@ export default function TaskDashboard() {
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm text-slate-500">Signed in as</p>
-          <p className="text-base font-semibold text-slate-900">{user.email}</p>
+          <p className="text-base font-semibold text-green-900">{user.email}</p>
         </div>
         <button
           type="button"
           onClick={handleSignOut}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50"
           disabled={loading}
         >
           Sign out
@@ -397,7 +397,7 @@ export default function TaskDashboard() {
       </div>
 
       <form onSubmit={handleAddTask} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900">Add a New Task</h2>
+        <h2 className="text-lg font-semibold text-green-900">Add a New Task</h2>
 
         <div className="space-y-4">
           <div>
@@ -459,7 +459,7 @@ export default function TaskDashboard() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-green-900 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 disabled:opacity-50"
+            className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50"
           >
             {loading ? 'Adding task...' : 'Add Task'}
           </button>
@@ -468,7 +468,7 @@ export default function TaskDashboard() {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Your List</h3>
+          <h3 className="text-sm font-semibold text-green-900 uppercase tracking-wider">Your List</h3>
           <div className="flex items-center gap-2">
             <label htmlFor="sortTasks" className="text-xs text-slate-500">Sort</label>
             <select
@@ -517,7 +517,7 @@ export default function TaskDashboard() {
                           placeholder="Task title"
                         />
                       ) : (
-                        <p className={`text-sm font-semibold ${task.is_completed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                        <p className={`text-sm font-semibold ${task.is_completed ? 'text-green-900/50 line-through' : 'text-green-900'}`}>
                           {task.title}
                         </p>
                       )}

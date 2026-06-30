@@ -41,7 +41,7 @@ export default function AddTaskForm() {
 
   return (
     <form action={createTask} className="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-8 space-y-4">
-      <h2 className="text-sm font-semibold text-slate-700">Add a New Task</h2>
+      <h2 className="text-sm font-semibold text-green-900">Add a New Task</h2>
       
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Title Input */}
@@ -100,7 +100,7 @@ export default function AddTaskForm() {
       <div className="flex justify-center">
         <button
           type="submit"
-          className="px-4 py-2 bg-green-900 hover:bg-green-800 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
+          className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
         >
           Add Task
         </button>

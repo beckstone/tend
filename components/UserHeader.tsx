@@ -13,7 +13,7 @@ export default async function UserHeader() {
     <div className="mb-6 flex items-center justify-end gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700">
       <span>Signed in as {user.email}</span>
       <form action={async () => { 'use server'; await supabase.auth.signOut() }}>
-        <button type="submit" className="rounded-lg bg-slate-900 px-3 py-2 text-white text-xs font-semibold hover:bg-slate-800">
+        <button type="submit" className="rounded-lg bg-green-700 px-3 py-2 text-white text-xs font-medium hover:bg-green-600">
           Sign out
         </button>
       </form>

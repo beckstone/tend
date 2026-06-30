@@ -67,7 +67,7 @@ export default function AuthForm() {
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm max-w-md mx-auto">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">Sign in to Tend</h2>
+      <h2 className="text-lg font-semibold text-green-900 mb-4">Sign in to Tend</h2>
 
       <form onSubmit={signIn} className="space-y-4">
         <div>
